@@ -58,14 +58,21 @@ func (h *RecipesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == http.MethodPost && RecipeRe.MatchString(r.URL.Path):
 		h.CreateRecipe(w, r)
+		return
 	case r.Method == http.MethodGet && RecipeRe.MatchString(r.URL.Path):
 		h.ListRecipes(w, r)
+		return
 	case r.Method == http.MethodGet && RecipeRe.MatchString(r.URL.Path):
 		h.GetRecipe(w, r)
+		return
 	case r.Method == http.MethodPut && RecipeRe.MatchString(r.URL.Path):
 		h.UpdateRecipe(w, r)
+		return
 	case r.Method == http.MethodDelete && RecipeRe.MatchString(r.URL.Path):
 		h.DeleteRecipe(w, r)
+		return
+	default:
+		return
 	}
 }
 
@@ -89,13 +96,14 @@ func (h *RecipesHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resourceID := slug.Make(recipe.Name)
-
 	if err := h.store.Add(resourceID, recipe); err != nil {
 		InternalServerErrorHandler(w, r)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("wal7lllllllllllllllllliiiiiiiiiib akhouya"))
 }
 func (h *RecipesHandler) ListRecipes(w http.ResponseWriter, r *http.Request) {
 	resources, err := h.store.List()
