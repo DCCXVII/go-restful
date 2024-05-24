@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"regexp"
 
-	"./recipes"
+	"github.com/DCCXVII/go-restful/recipes"
+	"github.com/gosimple/slug"
 )
 
 type recipeStore interface {
@@ -78,9 +80,36 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RecipesHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
+	//Recipe object that will populated from JSON payload
+	var recipe recipes.Recipe
 
+	if err := json.NewDecoder(r.Body).Decode(&recipe); err != nil {
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	resourceID := slug.Make(recipe.Name)
+
+	if err := h.store.Add(resourceID, recipe); err != nil {
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
-func (h *RecipesHandler) ListRecipes(w http.ResponseWriter, r *http.Request)  {}
+func (h *RecipesHandler) ListRecipes(w http.ResponseWriter, r *http.Request) {
+	resources, err := h.store.List()
+
+	jsonBytes, err := json.Marshal(resources)
+
+	if err != nil {
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonBytes)
+}
 func (h *RecipesHandler) GetRecipe(w http.ResponseWriter, r *http.Request)    {}
 func (h *RecipesHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {}
 func (h *RecipesHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {}
