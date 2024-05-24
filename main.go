@@ -101,20 +101,23 @@ func (h *RecipesHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("wal7lllllllllllllllllliiiiiiiiiib akhouya"))
+	w.Header().Set("Content-Type", "application/json")
 }
 func (h *RecipesHandler) ListRecipes(w http.ResponseWriter, r *http.Request) {
 	resources, err := h.store.List()
-
-	jsonBytes, err := json.Marshal(resources)
-
 	if err != nil {
 		InternalServerErrorHandler(w, r)
 		return
 	}
 
+	jsonBytes, err := json.Marshal(resources)
+	if err != nil {
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonBytes)
 }
